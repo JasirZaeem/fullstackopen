@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const PersonForm = ({
   handleAddContact,
@@ -30,9 +31,9 @@ const PersonForm = ({
   );
 };
 
-const Person = ({ person: { name, number } }) => {
+const Person = ({ person: { id, name, number } }) => {
   return (
-    <p key={name}>
+    <p key={id}>
       {name} {number}
     </p>
   );
@@ -60,22 +61,25 @@ const Persons = ({ persons }) => {
   return (
     <div>
       {persons.map((person) => (
-        <Person person={person} />
+        <Person key={person.id} person={person} />
       ))}
     </div>
   );
 };
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: "Arto Hellas", number: "040-123456" },
-    { name: "Ada Lovelace", number: "39-44-5323523" },
-    { name: "Dan Abramov", number: "12-43-234345" },
-    { name: "Mary Poppendieck", number: "39-23-6423122" },
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [query, setQuery] = useState("");
+
+  const getPersons = () => {
+    axios
+      .get("http://localhost:3001/persons")
+      .then(({ data }) => setPersons(data));
+  };
+
+  useEffect(getPersons, []);
 
   const handleAddContact = (event) => {
     event.preventDefault();
