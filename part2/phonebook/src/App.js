@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import personService from "./services/persons";
 
 const PersonForm = ({
   handleAddContact,
@@ -31,15 +31,22 @@ const PersonForm = ({
   );
 };
 
-const Person = ({ person: { id, name, number } }) => {
+const Person = ({ person: { id, name, number }, removePerson }) => {
   return (
-    <p key={id}>
+    <p>
       {name} {number}
+      <button
+        onClick={() => {
+          removePerson(id, name);
+        }}
+      >
+        delete
+      </button>
     </p>
   );
 };
 
-const Filter = ({ query, setQuery, persons }) => {
+const Filter = ({ query, setQuery, persons, removePerson }) => {
   return (
     <div>
       filter shown with:{" "}
@@ -48,7 +55,11 @@ const Filter = ({ query, setQuery, persons }) => {
         <div>
           {persons.map((person) =>
             person.name.toLowerCase().includes(query.toLowerCase()) ? (
-              <Person person={person} />
+              <Person
+                key={person.id}
+                person={person}
+                removePerson={removePerson}
+              />
             ) : null
           )}
         </div>
@@ -57,11 +68,11 @@ const Filter = ({ query, setQuery, persons }) => {
   );
 };
 
-const Persons = ({ persons }) => {
+const Persons = ({ persons, removePerson }) => {
   return (
     <div>
       {persons.map((person) => (
-        <Person key={person.id} person={person} />
+        <Person key={person.id} person={person} removePerson={removePerson} />
       ))}
     </div>
   );
@@ -74,9 +85,7 @@ const App = () => {
   const [query, setQuery] = useState("");
 
   const getPersons = () => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then(({ data }) => setPersons(data));
+    personService.getAll().then((data) => setPersons(data));
   };
 
   useEffect(getPersons, []);
@@ -84,20 +93,59 @@ const App = () => {
   const handleAddContact = (event) => {
     event.preventDefault();
 
-    if (persons.some(({ name }) => name === newName)) {
-      alert(`${newName} is already added to phonebook`);
+    if (
+      persons.some(({ name }) => name.toLowerCase() === newName.toLowerCase())
+    ) {
+      const shouldReplaceNumber = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      );
+      if (shouldReplaceNumber) {
+        const { id } = persons.find(
+          ({ name }) => name.toLowerCase() === newName.toLowerCase()
+        );
+        personService
+          .update(id, { id, name: newName, number: newNumber })
+          .then((updatedPerson) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== updatedPerson.id ? person : updatedPerson
+              )
+            );
+            setNewNumber("");
+            setNewName("");
+          });
+      }
       return;
     }
 
-    setPersons([...persons, { name: newName, number: newNumber }]);
-    setNewName("");
+    const newPerson = { name: newName, number: newNumber };
+
+    personService.create(newPerson).then((data) => {
+      setPersons([...persons, data]);
+      setNewName("");
+      setNewNumber("");
+    });
+  };
+
+  const removePerson = (id, name) => {
+    const shouldDeletePerson = window.confirm(`Delete ${name}`);
+    if (shouldDeletePerson) {
+      personService.remove(id).then(() => {
+        setPersons(persons.filter((person) => person.id !== id));
+      });
+    }
   };
 
   return (
     <div>
       <h2>Phonebook</h2>
 
-      <Filter query={query} setQuery={setQuery} persons={persons} />
+      <Filter
+        query={query}
+        setQuery={setQuery}
+        persons={persons}
+        removePerson={removePerson}
+      />
 
       <h2>add a new</h2>
 
@@ -111,7 +159,7 @@ const App = () => {
 
       <h2>Numbers</h2>
 
-      <Persons persons={persons} />
+      <Persons persons={persons} removePerson={removePerson} />
     </div>
   );
 };
