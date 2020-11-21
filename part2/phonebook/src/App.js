@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import personService from "./services/persons";
+import "./index.css";
 
 const PersonForm = ({
   handleAddContact,
@@ -78,17 +79,35 @@ const Persons = ({ persons, removePerson }) => {
   );
 };
 
+const Toast = ({ toast }) => {
+  return <div className={`toast ${toast.type}`}>{toast.message}</div>;
+};
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [query, setQuery] = useState("");
+  const [toasts, setToasts] = useState([]);
+  const [toastId, setToastId] = useState(0);
 
   const getPersons = () => {
     personService.getAll().then((data) => setPersons(data));
   };
 
   useEffect(getPersons, []);
+
+  const createToast = (toast, time) => {
+    const newId = toastId + 1;
+    setToastId(newId);
+    console.log(newId);
+    setToasts([...toasts, { ...toast, id: newId }]);
+    setTimeout(() => {
+      setToasts((prevToasts) =>
+        prevToasts.filter((toast) => toast.id !== newId)
+      );
+    }, time);
+  };
 
   const handleAddContact = (event) => {
     event.preventDefault();
@@ -111,8 +130,27 @@ const App = () => {
                 person.id !== updatedPerson.id ? person : updatedPerson
               )
             );
+            createToast(
+              {
+                visible: true,
+                message: `Updated '${updatedPerson.name}'`,
+                type: "success",
+              },
+              5000
+            );
             setNewNumber("");
             setNewName("");
+          })
+          .catch((error) => {
+            setPersons(persons.filter((value) => value.id !== id));
+            createToast(
+              {
+                visible: true,
+                message: `'${newName}' has already been deleted`,
+                type: "danger",
+              },
+              5000
+            );
           });
       }
       return;
@@ -122,6 +160,14 @@ const App = () => {
 
     personService.create(newPerson).then((data) => {
       setPersons([...persons, data]);
+      createToast(
+        {
+          visible: true,
+          message: `Added '${data.name}'`,
+          type: "success",
+        },
+        5000
+      );
       setNewName("");
       setNewNumber("");
     });
@@ -132,6 +178,14 @@ const App = () => {
     if (shouldDeletePerson) {
       personService.remove(id).then(() => {
         setPersons(persons.filter((person) => person.id !== id));
+        createToast(
+          {
+            visible: true,
+            message: `Removed '${name}'`,
+            type: "danger",
+          },
+          5000
+        );
       });
     }
   };
@@ -139,6 +193,10 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      {toasts.map((toast) => (
+        <Toast key={toast.id} toast={toast} />
+      ))}
 
       <Filter
         query={query}
