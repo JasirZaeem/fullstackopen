@@ -100,7 +100,6 @@ const App = () => {
   const createToast = (toast, time) => {
     const newId = toastId + 1;
     setToastId(newId);
-    console.log(newId);
     setToasts([...toasts, { ...toast, id: newId }]);
     setTimeout(() => {
       setToasts((prevToasts) =>
