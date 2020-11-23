@@ -7,7 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "cd ../.. && git subtree push --prefix path/to/app-subdir heroku master"
+    "deploy": "cd ../.. && git subtree push --prefix part3/phonebook-backend heroku master"
   },
   "keywords": [],
   "author": "Jasir Mohammad Zaeem",
