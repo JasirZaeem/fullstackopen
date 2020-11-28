@@ -141,11 +141,13 @@ const App = () => {
             setNewName("");
           })
           .catch((error) => {
-            setPersons(persons.filter((value) => value.id !== id));
+            if (error.response.status === "404") {
+              setPersons(persons.filter((value) => value.id !== id));
+            }
             createToast(
               {
                 visible: true,
-                message: `'${newName}' has already been deleted`,
+                message: error.response.data.error,
                 type: "danger",
               },
               5000
@@ -169,6 +171,16 @@ const App = () => {
       );
       setNewName("");
       setNewNumber("");
+    })
+    .catch((error) => {
+      createToast(
+        {
+          visible: true,
+          message: error.response.data.error,
+          type: "danger",
+        },
+        5000
+      );
     });
   };
 

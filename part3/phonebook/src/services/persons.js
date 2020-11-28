@@ -2,6 +2,10 @@ import axios from "axios";
 
 const baseUrl = "/api/persons";
 
+axios.defaults.validateStatus = (status) => {
+  return status >= 200 && status < 300;
+};
+
 const getAll = () => {
   return axios.get(baseUrl).then(({ data }) => data);
 };

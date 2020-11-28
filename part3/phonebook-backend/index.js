@@ -11,7 +11,7 @@ app.use(cors());
 
 app.use(express.static("build"));
 
-morgan.token("person", function (req, res) {
+morgan.token("person", function (req) {
   return req.method === "POST" ? JSON.stringify(req.body) : "";
 });
 
@@ -85,9 +85,17 @@ app.put("/api/persons/:id", (req, res, next) => {
 
   console.info({ id, name, number });
 
-  Person.findByIdAndUpdate(id, { name, number }, { new: true })
+  Person.findByIdAndUpdate(
+    id,
+    { name, number },
+    { new: true, runValidators: true, context: "query" }
+  )
     .then((updatedPerson) => {
-      res.json(updatedPerson.toJSON()).status(204);
+      if (updatedPerson) {
+        res.status(204).json(updatedPerson.toJSON());
+      } else {
+        res.status(404).json({ error: `${name} does not exist` });
+      }
     })
     .catch(next);
 });
@@ -101,6 +109,12 @@ const errorHandler = (error, req, res, next) => {
 
   if (error.name === "CastError") {
     return res.status(400).send({ error: "malformed id" });
+  } else if (error.name === "ValidationError") {
+    if (error?.errors?.name?.kind === "unique") {
+      return res.status(409).json({ error: error.message });
+    } else {
+      return res.status(400).json({ error: error.message });
+    }
   }
 
   next(error);
