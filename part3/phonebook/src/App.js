@@ -141,7 +141,7 @@ const App = () => {
             setNewName("");
           })
           .catch((error) => {
-            if (error.response.status === "404") {
+            if (error.response.status === 404) {
               setPersons(persons.filter((value) => value.id !== id));
             }
             createToast(

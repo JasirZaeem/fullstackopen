@@ -92,7 +92,7 @@ app.put("/api/persons/:id", (req, res, next) => {
   )
     .then((updatedPerson) => {
       if (updatedPerson) {
-        res.status(204).json(updatedPerson.toJSON());
+        res.status(200).json(updatedPerson.toJSON());
       } else {
         res.status(404).json({ error: `${name} does not exist` });
       }
