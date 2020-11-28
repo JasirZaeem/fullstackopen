@@ -40,7 +40,7 @@ app.get("/api/persons/:id", (req, res, next) => {
   Person.findById(req.params.id)
     .then((person) => {
       if (person) {
-        res.json(person);
+        res.json(person.toJSON());
       } else {
         res.status(404).end();
       }
@@ -74,7 +74,7 @@ app.post("/api/persons", (req, res, next) => {
   newPerson
     .save()
     .then((person) => {
-      res.status(201).json(person);
+      res.status(201).json(person.toJSON());
     })
     .catch(next);
 });
@@ -86,14 +86,8 @@ app.put("/api/persons/:id", (req, res, next) => {
   console.info({ id, name, number });
 
   Person.findByIdAndUpdate(id, { name, number }, { new: true })
-    .then(({ _id: id, name, number }) => {
-      const updatedPerson = {
-        id: id.toString(),
-        name,
-        number,
-      };
-      console.info({ updatedPerson });
-      res.json(updatedPerson).status(204);
+    .then((updatedPerson) => {
+      res.json(updatedPerson.toJSON()).status(204);
     })
     .catch(next);
 });
