@@ -6,6 +6,7 @@ const app = require("../app");
 const api = supertest(app);
 
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
 const initialBlogs = require("./utls/sampleBlogList");
 
@@ -117,6 +118,96 @@ describe("when there is initially some blogs", () => {
       updatedPost
     );
   });
+});
+
+describe("adding users", () => {
+  beforeEach(async () => {
+    await User.deleteMany({});
+  });
+
+  test("HTTP POST request to the /api/users url successfully creates a new user", async () => {
+    const testUser = {
+      name: "Jasir Zaeem",
+      username: "JasirZaeem",
+      password: "password",
+    };
+
+    const { body: newUserResponse } = await api
+      .post("/api/users")
+      .send(testUser);
+
+    for (const key in testUser) {
+      if (key !== "password") {
+        expect(newUserResponse[key]).toBe(testUser[key]);
+      }
+    }
+
+    const { body: userListResponse } = await api.get("/api/users");
+
+    expect(userListResponse).toContainEqual(newUserResponse);
+  });
+
+  test("Sending a user with missing username or password results in 400", async () => {
+    const testUserMissingUsername = {
+      name: "Jasir Zaeem",
+      password: "password",
+    };
+
+    const testUserMissingPassword = {
+      name: "Jasir Zaeem",
+      username: "JasirZaeem",
+    };
+
+    const errorResponsePromises = [
+      api.post("/api/users").send(testUserMissingUsername),
+      api.post("/api/users").send(testUserMissingPassword),
+    ];
+
+    const errorResponses = await Promise.all(errorResponsePromises);
+
+    errorResponses.forEach((errorResponse) => {
+      expect(errorResponse.status).toBe(400);
+    });
+  });
+
+  test("Sending a user with password or username shorter than 3 characters results in 400", async () => {
+    const testUserShortUsername = {
+      name: "Jasir Zaeem",
+      username: "Ja",
+    };
+
+    const testUserShortPassword = {
+      name: "Jasir Zaeem",
+      password: "pa",
+    };
+
+    const errorResponsePromises = [
+      api.post("/api/users").send(testUserShortUsername),
+      api.post("/api/users").send(testUserShortPassword),
+    ];
+
+    const errorResponses = await Promise.all(errorResponsePromises);
+
+    errorResponses.forEach((errorResponse) => {
+      expect(errorResponse.status).toBe(400);
+    });
+  });
+});
+
+test("Sending a user with existing username results in 409", async () => {
+  const testUser = {
+    name: "Jasir Zaeem",
+    username: "JasirZaeem",
+    password: "password",
+  };
+
+  // Add User
+  await api.post("/api/users").send(testUser);
+
+  // Add user with same username again
+  const errorResponse = await api.post("/api/users").send(testUser);
+
+  expect(errorResponse.status).toBe(409);
 });
 
 afterAll(async () => {
