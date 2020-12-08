@@ -13,6 +13,7 @@ const logger = require("./utils/logger");
 
 const blogsRouter = require("./controllers/blogs");
 const usersRouter = require("./controllers/users");
+const authRouter = require("./controllers/auth");
 
 const mongoUrl = config.MONGO_URI;
 
@@ -40,6 +41,7 @@ app.use(express.json());
 
 app.use("/api/blogs", blogsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/auth", authRouter);
 
 const errorHandler = (err, req, res, next) => {
   logger.error(err.message);
