@@ -15,6 +15,10 @@ const blogsRouter = require("./controllers/blogs");
 const usersRouter = require("./controllers/users");
 const authRouter = require("./controllers/auth");
 
+// Middlewares
+
+const getToken = require("./middlewares/getToken");
+
 const mongoUrl = config.MONGO_URI;
 
 logger.info("Connecting to database");
@@ -36,7 +40,7 @@ mongoose
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use(getToken);
 // Blogs route, /api/blogs
 
 app.use("/api/blogs", blogsRouter);
@@ -53,6 +57,12 @@ const errorHandler = (err, req, res, next) => {
       return res.status(409).json({ error: "username must be unique" });
     }
     return res.status(400).json({ error: err.message });
+  } else if (err.name === "JsonWebTokenError") {
+    return res.status(401).json({
+      error: "invalid token",
+    });
+  } else if (err.name === "AuthError") {
+    return res.status(401).json({ error: err.message });
   }
 
   next(err);
