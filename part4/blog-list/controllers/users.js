@@ -5,7 +5,9 @@ const bcrypt = require("bcrypt");
 // For domain/api/users
 
 usersRouter.get("/", async (req, res) => {
-  return res.json(await User.find({}));
+  return res.json(
+    await User.find({}).populate("blogs", { url: 1, title: 1, author: 1 })
+  );
 });
 
 usersRouter.post("/", async (req, res, next) => {
