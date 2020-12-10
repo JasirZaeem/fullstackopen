@@ -33,5 +33,34 @@ const addBlog = async (blogData, token) => {
   });
   return response.data;
 };
-const blogService = { getAllBlogs, getAllUsers, loginUser, addBlog };
+
+const likeBlog = async ({ id, likes }, token) => {
+  const response = await axios.put(
+    `${baseApiUrl}${blogEndpoint}/${id}`,
+    { likes: likes + 1 },
+    {
+      headers: {
+        Authorization: bearer(token),
+      },
+    }
+  );
+  return response.data;
+};
+
+const deleteBlog = async ({ id }, token) => {
+  const response = await axios.delete(`${baseApiUrl}${blogEndpoint}/${id}`, {
+    headers: {
+      Authorization: bearer(token),
+    },
+  });
+};
+
+const blogService = {
+  getAllBlogs,
+  getAllUsers,
+  loginUser,
+  addBlog,
+  likeBlog,
+  deleteBlog,
+};
 export default blogService;
