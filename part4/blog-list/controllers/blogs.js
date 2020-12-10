@@ -60,16 +60,6 @@ blogsRouter.delete("/:id", authenticated, async (req, res, next) => {
 
 blogsRouter.put("/:id", authenticated, async (req, res, next) => {
   try {
-    const blog = await Blog.findById(req.params.id);
-    if (!blog) {
-      return res.status(404).json({ error: "Blog does not exist" });
-    }
-    if (blog.user.toString() !== req.user.id) {
-      return next({
-        name: "AuthError",
-        message: "You are not authorized to delete this blog",
-      });
-    }
 
     const { title, author, url, likes } = req.body;
 
@@ -89,7 +79,11 @@ blogsRouter.put("/:id", authenticated, async (req, res, next) => {
       { new: true }
     );
 
-    return res.status(201).json(updatedPost);
+    if (updatedPost) {
+      return res.status(201).json(updatedPost);
+    } else {
+      return res.status(404).json({error: "Blog does not exist"});
+    }
   } catch (e) {
     next(e);
   }
