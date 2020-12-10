@@ -1,0 +1,20 @@
+.toast {
+    background: lightgrey;
+    font-size: 30px;
+    border-style: solid;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+.toast.error {
+    color: red;
+}
+
+.toast.success {
+    color: green;
+}
+
+.toast > p {
+    margin: 5px;
+}
