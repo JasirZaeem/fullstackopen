@@ -1,6 +1,7 @@
 import Blog from "./Blog";
 import CreateBlog from "./CreateBlog";
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const UserPage = ({
   user,
@@ -48,6 +49,15 @@ const UserPage = ({
       </div>
     </div>
   );
+};
+
+UserPage.propTypes = {
+  user: PropTypes.object.isRequired,
+  blogs: PropTypes.arrayOf(PropTypes.object).isRequired,
+  logoutHandler: PropTypes.func.isRequired,
+  addBlogHandler: PropTypes.func.isRequired,
+  likeBlogHandler: PropTypes.func.isRequired,
+  deleteBlogHandler: PropTypes.func.isRequired,
 };
 
 export default UserPage;

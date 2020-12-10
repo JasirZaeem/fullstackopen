@@ -48,7 +48,7 @@ const likeBlog = async ({ id, likes }, token) => {
 };
 
 const deleteBlog = async ({ id }, token) => {
-  const response = await axios.delete(`${baseApiUrl}${blogEndpoint}/${id}`, {
+  await axios.delete(`${baseApiUrl}${blogEndpoint}/${id}`, {
     headers: {
       Authorization: bearer(token),
     },
