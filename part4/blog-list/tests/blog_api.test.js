@@ -9,11 +9,21 @@ const Blog = require("../models/blog");
 const User = require("../models/user");
 
 const initialBlogs = require("./utls/sampleBlogList");
+const initialUsers = require("./utls/sampleUserList");
+
+const login = async (user, api) => {
+  const {
+    body: { token },
+  } = await api.post("/api/auth/login").send(user);
+  return token;
+};
 
 describe("when there is initially some blogs", () => {
   beforeEach(async () => {
     await Blog.deleteMany({});
     await Blog.insertMany(initialBlogs);
+    await User.deleteMany({});
+    await User.insertMany(initialUsers);
   });
 
   test("blogs are returned as json", async () => {
@@ -43,8 +53,19 @@ describe("when there is initially some blogs", () => {
       likes: 12,
     };
 
+    const testUser = initialUsers[0];
+
+    const token = await login(
+      {
+        username: testUser.username,
+        password: "password",
+      },
+      api
+    );
+
     const { body: newPostResponse } = await api
       .post("/api/blogs")
+      .set({ Authorization: `Bearer ${token}` })
       .send(testPost);
 
     for (const key in testPost) {
@@ -54,7 +75,14 @@ describe("when there is initially some blogs", () => {
     const { body: blogListResponse } = await api.get("/api/blogs");
 
     expect(blogListResponse.length).toBe(initialBlogs.length + 1);
-    expect(blogListResponse).toContainEqual(newPostResponse);
+    expect(blogListResponse).toContainEqual({
+      ...newPostResponse,
+      user: {
+        id: testUser._id,
+        name: testUser.name,
+        username: testUser.username,
+      },
+    });
   });
 
   test("Missing like property defaults to 0", async () => {
@@ -64,11 +92,35 @@ describe("when there is initially some blogs", () => {
       url: "https://example.com",
     };
 
+    const testUser = initialUsers[0];
+
+    const token = await login(
+      {
+        username: testUser.username,
+        password: "password",
+      },
+      api
+    );
+
     const { body: newPostResponse } = await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${token}`)
       .send(testPost);
 
     expect(newPostResponse.likes).toBe(0);
+  });
+
+  test("Sending a post with missing token results in 401", async () => {
+    const testPost = {
+      title: "Test Blog",
+      author: "T B L",
+      url: "https://example.com",
+      likes: 12,
+    };
+
+    const errorResponse = await api.post("/api/blogs").send(testPost);
+
+    expect(errorResponse.status).toBe(401);
   });
 
   test("Sending a post with missing title or url results in 400", async () => {
@@ -84,9 +136,25 @@ describe("when there is initially some blogs", () => {
       likes: 12,
     };
 
+    const testUser = initialUsers[0];
+
+    const token = await login(
+      {
+        username: testUser.username,
+        password: "password",
+      },
+      api
+    );
+
     const errorResponsePromises = [
-      api.post("/api/blogs").send(testPostMissingTitle),
-      api.post("/api/blogs").send(testPostMissingUrl),
+      api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${token}`)
+        .send(testPostMissingTitle),
+      api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${token}`)
+        .send(testPostMissingUrl),
     ];
 
     const errorResponses = await Promise.all(errorResponsePromises);
@@ -97,16 +165,39 @@ describe("when there is initially some blogs", () => {
   });
 
   test("Sending a delete request removes the post", async () => {
+    const testUser = initialUsers[0];
+
+    const token = await login(
+      {
+        username: testUser.username,
+        password: "password",
+      },
+      api
+    );
+
     const { body: initialPostList } = await api.get("/api/blogs");
-    await api.delete(`/api/blogs/${initialPostList.shift().id}`);
+    await api
+      .delete(`/api/blogs/${initialPostList.shift().id}`)
+      .set("Authorization", `Bearer ${token}`);
     const { body: updatedPostList } = await api.get("/api/blogs");
 
     expect(initialPostList).toEqual(updatedPostList);
   });
 
   test("Updating a post works", async () => {
+    const testUser = initialUsers[0];
+
+    const token = await login(
+      {
+        username: testUser.username,
+        password: "password",
+      },
+      api
+    );
+
     const { body: updatedPost } = await api
       .put(`/api/blogs/${initialBlogs[0]._id}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({
         likes: 999,
       });
@@ -114,9 +205,14 @@ describe("when there is initially some blogs", () => {
     expect(updatedPost.likes).toBe(999);
 
     const { body: updatedPostList } = await api.get("/api/blogs");
-    expect(updatedPostList.find((post) => post.id === updatedPost.id)).toEqual(
-      updatedPost
-    );
+    expect(updatedPostList.find((post) => post.id === updatedPost.id)).toEqual({
+      ...updatedPost,
+      user: {
+        id: testUser._id,
+        name: testUser.name,
+        username: testUser.username,
+      },
+    });
   });
 });
 
@@ -192,22 +288,22 @@ describe("adding users", () => {
       expect(errorResponse.status).toBe(400);
     });
   });
-});
 
-test("Sending a user with existing username results in 409", async () => {
-  const testUser = {
-    name: "Jasir Zaeem",
-    username: "JasirZaeem",
-    password: "password",
-  };
+  test("Sending a user with existing username results in 409", async () => {
+    const testUser = {
+      name: "Jasir Zaeem",
+      username: "JasirZaeem",
+      password: "password",
+    };
 
-  // Add User
-  await api.post("/api/users").send(testUser);
+    // Add User
+    await api.post("/api/users").send(testUser);
 
-  // Add user with same username again
-  const errorResponse = await api.post("/api/users").send(testUser);
+    // Add user with same username again
+    const errorResponse = await api.post("/api/users").send(testUser);
 
-  expect(errorResponse.status).toBe(409);
+    expect(errorResponse.status).toBe(409);
+  });
 });
 
 afterAll(async () => {

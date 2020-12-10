@@ -58,26 +58,41 @@ blogsRouter.delete("/:id", authenticated, async (req, res, next) => {
   }
 });
 
-blogsRouter.put("/:id", async (req, res) => {
-  const { title, author, url, likes } = req.body;
+blogsRouter.put("/:id", authenticated, async (req, res, next) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ error: "Blog does not exist" });
+    }
+    if (blog.user.toString() !== req.user.id) {
+      return next({
+        name: "AuthError",
+        message: "You are not authorized to delete this blog",
+      });
+    }
 
-  const fieldsToUpdate = Object.entries({ title, author, url, likes }).reduce(
-    (toUpdate, [field, value]) => {
-      if (value !== undefined) {
-        toUpdate[field] = value;
-      }
-      return toUpdate;
-    },
-    {}
-  );
+    const { title, author, url, likes } = req.body;
 
-  const updatedPost = await Blog.findByIdAndUpdate(
-    req.params.id,
-    { $set: fieldsToUpdate },
-    { new: true }
-  );
+    const fieldsToUpdate = Object.entries({ title, author, url, likes }).reduce(
+      (toUpdate, [field, value]) => {
+        if (value !== undefined) {
+          toUpdate[field] = value;
+        }
+        return toUpdate;
+      },
+      {}
+    );
 
-  return res.status(201).json(updatedPost);
+    const updatedPost = await Blog.findByIdAndUpdate(
+      req.params.id,
+      { $set: fieldsToUpdate },
+      { new: true }
+    );
+
+    return res.status(201).json(updatedPost);
+  } catch (e) {
+    next(e);
+  }
 });
 
 module.exports = blogsRouter;
