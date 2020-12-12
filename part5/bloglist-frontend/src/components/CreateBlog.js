@@ -17,6 +17,7 @@ const CreateBlog = ({ addNewBlog }) => {
       <form onSubmit={formSubmitHandler}>
         title:
         <input
+          id={"new-title-input"}
           type={"text"}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -24,6 +25,7 @@ const CreateBlog = ({ addNewBlog }) => {
         <br />
         author:
         <input
+          id={"new-author-input"}
           type={"text"}
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
@@ -31,12 +33,15 @@ const CreateBlog = ({ addNewBlog }) => {
         <br />
         url:
         <input
+          id={"new-url-input"}
           type={"url"}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
         />
         <br />
-        <button type={"submit"}>create</button>
+        <button id={"create-new-blog-btn"} type={"submit"}>
+          create
+        </button>
       </form>
     </div>
   );

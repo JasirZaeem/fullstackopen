@@ -25,7 +25,7 @@ const Blog = ({
   };
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className={"blog"}>
       <p style={pStyle}>
         {blog.title} by {blog.author}
         {detailVisible ? (
@@ -33,8 +33,9 @@ const Blog = ({
             <br />
             {blog.url}
             <br />
-            likes {blog.likes}
+            <span className={"likes"}>likes {blog.likes}</span>
             <button
+              className={"like-btn"}
               onClick={() => {
                 likeBlogHandler(blog);
               }}
@@ -45,13 +46,19 @@ const Blog = ({
             {blog.user.name}
             <br />
             {isCreatedByUser ? (
-              <button onClick={() => deleteBlogHandler(blog)}>remove</button>
+              <button
+                className={"delete-blog-btn"}
+                onClick={() => deleteBlogHandler(blog)}
+              >
+                remove
+              </button>
             ) : null}
           </>
         ) : null}
       </p>
 
       <button
+        className={"details-btn"}
         onClick={() => {
           setDetailVisible(!detailVisible);
         }}

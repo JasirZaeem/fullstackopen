@@ -58,7 +58,7 @@ const App = () => {
   const addBlogHandler = async (blogData) => {
     try {
       const newBlog = await blogService.addBlog(blogData, user.token);
-      setBlogs([...blogs, newBlog]);
+      setBlogs([...blogs, { ...newBlog, user }]);
       setToastMessage({
         text: `Added new blog "${blogData.title}" by ${blogData.author}`,
         type: "success",

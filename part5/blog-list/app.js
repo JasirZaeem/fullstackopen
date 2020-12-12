@@ -43,6 +43,13 @@ app.use(express.json());
 app.use(getToken);
 // Blogs route, /api/blogs
 
+// Only in testing!
+if (process.env.NODE_ENV === "test") {
+  logger.info("Running in test, testing endpoint is available");
+  const testingRouter = require("./controllers/testing");
+  app.use("/api/testing", testingRouter);
+}
+
 app.use("/api/blogs", blogsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);

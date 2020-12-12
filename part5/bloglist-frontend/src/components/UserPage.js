@@ -28,11 +28,14 @@ const UserPage = ({
       </div>
       <div>
         {createBlogVisible ? <CreateBlog addNewBlog={addNewBlog} /> : null}
-        <button onClick={() => setCreateBlogVisible(!createBlogVisible)}>
+        <button
+          id={"new-blog-form-control-btn"}
+          onClick={() => setCreateBlogVisible(!createBlogVisible)}
+        >
           {createBlogVisible ? "cancel" : "new blog"}
         </button>
       </div>
-      <div>
+      <div className={"blog-list"}>
         {blogs
           .sort((a, b) => b.likes - a.likes)
           .map((blog) => (
