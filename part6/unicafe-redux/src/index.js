@@ -49,7 +49,7 @@ const App = () => {
         neutral
       </button>
       <button onClick={() => store.dispatch({ type: "BAD" })}>bad</button>
-
+      <button onClick={() => store.dispatch({ type: "ZERO" })}>reset</button>
       <Statistics good={good} neutral={neutral} bad={bad} />
     </div>
   );
