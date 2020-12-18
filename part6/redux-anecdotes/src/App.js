@@ -11,10 +11,8 @@ const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    (async () => {
-      dispatch(addInitialAnecdotes(await anecdotesService.getAll()));
-    })();
-  });
+    dispatch(addInitialAnecdotes());
+  }, [dispatch]);
 
   return (
     <div>

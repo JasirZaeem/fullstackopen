@@ -12,16 +12,21 @@ const reducer = (state = "", action) => {
   }
 };
 
-export const setNewNotification = (notification) => {
-  return {
-    type: SET_NOTIFICATION,
-    notification,
-  };
-};
-
 export const removeNotification = () => {
   return {
     type: REMOVE_NOTIFICATION,
+  };
+};
+
+export const setNewNotification = (notification, durationInSeconds) => {
+  return (dispatch) => {
+    dispatch({
+      type: SET_NOTIFICATION,
+      notification,
+    });
+    setTimeout(() => {
+      dispatch(removeNotification());
+    }, durationInSeconds * 1000);
   };
 };
 
