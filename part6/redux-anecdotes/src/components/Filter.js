@@ -1,14 +1,11 @@
 import React from "react";
-import { useDispatch } from "react-redux";
+import { connect } from "react-redux";
 import { setQuery } from "../reducers/queryReducer";
 
-const Filter = () => {
-  const dispatch = useDispatch();
-
+const Filter = ({ setQuery }) => {
   const handleChange = (event) => {
-    // input-field value is in variable event.target.value
     const query = event.target.value;
-    dispatch(setQuery(query));
+    setQuery(query);
   };
   const style = {
     marginBottom: 10,
@@ -21,4 +18,9 @@ const Filter = () => {
   );
 };
 
-export default Filter;
+const mapStateToProps = null;
+const mapDispatchToProps = {
+  setQuery,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Filter);

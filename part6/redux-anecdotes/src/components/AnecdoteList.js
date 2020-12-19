@@ -1,27 +1,12 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import { voteOnAnecdote } from "../reducers/anecdoteReducer";
 import { setNewNotification } from "../reducers/notificationReducer";
 
-const AnecdoteList = () => {
-  const anecdotes = useSelector((state) => {
-    if (!state.query) {
-      return state.anecdotes.sort(
-        (anecdoteA, anecdoteB) => anecdoteB.votes - anecdoteA.votes
-      );
-    }
-    return state.anecdotes
-      .filter((anecdote) =>
-        anecdote.content.toLowerCase().includes(state.query.toLowerCase())
-      )
-      .sort((anecdoteA, anecdoteB) => anecdoteB.votes - anecdoteA.votes);
-  });
-
-  const dispatch = useDispatch();
-
+const AnecdoteList = ({ anecdotes, voteOnAnecdote, setNewNotification }) => {
   const vote = async (anecdote) => {
-    const updatedAnecdote = await dispatch(voteOnAnecdote(anecdote));
-    dispatch(setNewNotification(`You voted "${updatedAnecdote.content}"`, 5));
+    const updatedAnecdote = await voteOnAnecdote(anecdote);
+    setNewNotification(`You voted "${updatedAnecdote.content}"`, 5);
   };
 
   return anecdotes.map((anecdote) => (
@@ -35,4 +20,26 @@ const AnecdoteList = () => {
   ));
 };
 
-export default AnecdoteList;
+const mapStateToProps = (state) => {
+  if (!state.query) {
+    return {
+      anecdotes: state.anecdotes.sort(
+        (anecdoteA, anecdoteB) => anecdoteB.votes - anecdoteA.votes
+      ),
+    };
+  }
+  return {
+    anecdotes: state.anecdotes
+      .filter((anecdote) =>
+        anecdote.content.toLowerCase().includes(state.query.toLowerCase())
+      )
+      .sort((anecdoteA, anecdoteB) => anecdoteB.votes - anecdoteA.votes),
+  };
+};
+
+const mapDispatchToProps = {
+  voteOnAnecdote,
+  setNewNotification,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(AnecdoteList);
