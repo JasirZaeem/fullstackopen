@@ -6,6 +6,7 @@ import {
   useRouteMatch,
   useHistory,
 } from "react-router-dom";
+import { useField } from "./hooks";
 
 const Menu = () => {
   const padding = {
@@ -100,23 +101,28 @@ const Footer = () => (
 );
 
 const CreateNew = (props) => {
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
-  const [info, setInfo] = useState("");
+  // const [content, setContent] = useState("");
+  const { clearValue: clearContent, ...content } = useField("text");
+  // const [author, setAuthor] = useState("");
+  const { clearValue: clearAuthor, ...author } = useField("text");
+  const { clearValue: clearInfo, ...info } = useField("text");
   const history = useHistory();
 
+  const clearFields = () => {
+    clearContent();
+    clearAuthor();
+    clearInfo();
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     props.addNew({
-      content,
-      author,
-      info,
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0,
     });
-    props.createNotification(`a new anecdote ${content} created!`, 10);
-    setContent("");
-    setAuthor("");
-    setInfo("");
+    props.createNotification(`a new anecdote ${content.value} created!`, 10);
+    clearFields();
     history.push("/");
   };
 
@@ -126,29 +132,20 @@ const CreateNew = (props) => {
       <form onSubmit={handleSubmit}>
         <div>
           content
-          <input
-            name="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+          <input name="content" {...content} />
         </div>
         <div>
           author
-          <input
-            name="author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
+          <input name="author" {...author} />
         </div>
         <div>
           url for more info
-          <input
-            name="info"
-            value={info}
-            onChange={(e) => setInfo(e.target.value)}
-          />
+          <input name="info" {...info} />
         </div>
         <button>create</button>
+        <button type={"button"} onClick={clearFields}>
+          reset
+        </button>
       </form>
     </div>
   );
