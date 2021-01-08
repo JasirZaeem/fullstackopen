@@ -1,13 +1,66 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
+import React from "react";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteBlog, likeBlog } from "../reducers/blogReducer";
+import {
+  NOTIFICATION_DURATION_MED,
+  NOTIFICATION_ERROR,
+  NOTIFICATION_SUCCESS,
+  setNewNotification,
+} from "../reducers/notificationReducer";
 
-const Blog = ({
-  blog,
-  likeBlogHandler,
-  isCreatedByUser,
-  deleteBlogHandler,
-}) => {
-  const [detailVisible, setDetailVisible] = useState(false);
+import { useHistory } from "react-router-dom";
+
+const Blog = () => {
+  const { id } = useParams();
+  const blog = useSelector(({ blogs }) => blogs.find((blog) => blog.id === id));
+  const user = useSelector(({ user }) => user);
+
+  const dispatch = useDispatch();
+
+  const history = useHistory();
+
+  const deleteBlogHandler = async (blog) => {
+    try {
+      const deletionConfirmed = window.confirm(
+        `Delete blog ${blog.title} by ${blog.author} ?`
+      );
+      if (!deletionConfirmed) return;
+      await dispatch(deleteBlog(blog));
+      dispatch(
+        setNewNotification(
+          `Deleted blog "${blog.title}" by ${blog.author}`,
+          NOTIFICATION_ERROR,
+          NOTIFICATION_DURATION_MED
+        )
+      );
+      history.push("/blogs");
+    } catch (e) {
+      console.log({ e });
+      dispatch(
+        setNewNotification(
+          `Failed to delete blog "${blog.title}" by ${blog.author}`,
+          NOTIFICATION_ERROR,
+          NOTIFICATION_DURATION_MED
+        )
+      );
+    }
+  };
+
+  const likeBlogHandler = async (blog) => {
+    try {
+      await dispatch(likeBlog(blog));
+    } catch (e) {
+      console.log({ e });
+      dispatch(
+        setNewNotification(
+          `Failed to like blog "${blog.title}" by ${blog.author}`,
+          NOTIFICATION_SUCCESS,
+          NOTIFICATION_DURATION_MED
+        )
+      );
+    }
+  };
 
   const blogStyle = {
     padding: "10px",
@@ -24,56 +77,41 @@ const Blog = ({
     margin: "0px",
   };
 
-  return (
+  return blog ? (
     <div style={blogStyle} className={"blog"}>
-      <p style={pStyle}>
+      <h1>
         {blog.title} by {blog.author}
-        {detailVisible ? (
-          <>
-            <br />
-            {blog.url}
-            <br />
-            <span className={"likes"}>likes {blog.likes}</span>
-            <button
-              className={"like-btn"}
-              onClick={() => {
-                likeBlogHandler(blog);
-              }}
-            >
-              like
-            </button>
-            <br />
-            {blog.user.name}
-            <br />
-            {isCreatedByUser ? (
-              <button
-                className={"delete-blog-btn"}
-                onClick={() => deleteBlogHandler(blog)}
-              >
-                remove
-              </button>
-            ) : null}
-          </>
+      </h1>
+      <p style={pStyle}>
+        <a href={blog.url}>{blog.url}</a>
+        <br />
+        <span className={"likes"}>likes {blog.likes}</span>
+        {user ? (
+          <button
+            className={"like-btn"}
+            onClick={() => {
+              likeBlogHandler(blog);
+            }}
+          >
+            like
+          </button>
+        ) : null}
+        <br />
+        Added by {blog.user.name} ({blog.user.username})
+        <br />
+        {user?.username === blog.user.username ? (
+          <button
+            className={"delete-blog-btn"}
+            onClick={() => deleteBlogHandler(blog)}
+          >
+            remove
+          </button>
         ) : null}
       </p>
-
-      <button
-        className={"details-btn"}
-        onClick={() => {
-          setDetailVisible(!detailVisible);
-        }}
-      >
-        {detailVisible ? "hide" : "view"}
-      </button>
     </div>
+  ) : (
+    "BLog not found"
   );
-};
-
-Blog.propTypes = {
-  blog: PropTypes.object.isRequired,
-  likeBlogHandler: PropTypes.func.isRequired,
-  isCreatedByUser: PropTypes.bool.isRequired,
-  deleteBlogHandler: PropTypes.func,
 };
 
 export default Blog;

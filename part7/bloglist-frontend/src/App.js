@@ -6,12 +6,15 @@ import { addUserFromLocalStorage } from "./reducers/userReducer";
 import LoginForm from "./components/LoginForm";
 import UserPage from "./components/UserPage";
 import Toast from "./components/Toast";
+import UserList from "./components/UserList";
+
+import { Switch, Route, Redirect } from "react-router-dom";
+import Blogs from "./components/Blogs";
+import Menu from "./components/Menu";
+import Blog from "./components/Blog";
 
 const App = () => {
   const user = useSelector(({ user }) => user);
-  const { message: toastMessage } = useSelector(
-    ({ notification }) => notification
-  );
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -20,8 +23,26 @@ const App = () => {
 
   return (
     <div>
-      {toastMessage ? <Toast /> : null}
-      {user === null ? <LoginForm /> : <UserPage />}
+      <Menu />
+      <Toast />
+
+      <Switch>
+        <Route path={"/users/:id"}>
+          <UserPage />
+        </Route>
+        <Route path={"/blogs/:id"}>
+          <Blog />
+        </Route>
+        <Route path={"/users"}>
+          <UserList />
+        </Route>
+        <Route path={"/blogs"}>
+          <Blogs />
+        </Route>
+        <Route path="/">
+          {user === null ? <LoginForm /> : <Redirect to={"/blogs"} />}
+        </Route>
+      </Switch>
     </div>
   );
 };
