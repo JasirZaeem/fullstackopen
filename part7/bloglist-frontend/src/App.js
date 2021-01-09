@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import "./index.css";
 import { addUserFromLocalStorage } from "./reducers/userReducer";
 
@@ -8,13 +8,12 @@ import UserPage from "./components/UserPage";
 import Toast from "./components/Toast";
 import UserList from "./components/UserList";
 
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Switch, Route } from "react-router-dom";
 import Blogs from "./components/Blogs";
 import Menu from "./components/Menu";
 import Blog from "./components/Blog";
 
 const App = () => {
-  const user = useSelector(({ user }) => user);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -40,7 +39,7 @@ const App = () => {
           <Blogs />
         </Route>
         <Route path="/">
-          {user === null ? <LoginForm /> : <Redirect to={"/blogs"} />}
+          <LoginForm />
         </Route>
       </Switch>
     </div>

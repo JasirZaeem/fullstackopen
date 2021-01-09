@@ -12,36 +12,41 @@ const CreateBlog = ({ addNewBlog }) => {
   };
 
   return (
-    <div>
-      <h2>Create new</h2>
+    <div className={"card m-2 shadow"}>
+      <div className={"card-header"}>
+        <h2 className={"card-title"}>Create new</h2>
+      </div>
       <form onSubmit={formSubmitHandler}>
-        title:
-        <input
-          id={"new-title-input"}
-          type={"text"}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <br />
-        author:
-        <input
-          id={"new-author-input"}
-          type={"text"}
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-        <br />
-        url:
-        <input
-          id={"new-url-input"}
-          type={"url"}
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-        <br />
-        <button id={"create-new-blog-btn"} type={"submit"}>
-          create
-        </button>
+        <div className={"card-body"}>
+          title:
+          <input
+            id={"new-title-input"}
+            type={"text"}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <br />
+          author:
+          <input
+            id={"new-author-input"}
+            type={"text"}
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+          />
+          <br />
+          url:
+          <input
+            id={"new-url-input"}
+            type={"url"}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+        </div>
+        <div className={"card-footer"}>
+          <button id={"create-new-blog-btn"} type={"submit"}>
+            create
+          </button>
+        </div>
       </form>
     </div>
   );

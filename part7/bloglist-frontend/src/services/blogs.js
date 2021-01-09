@@ -4,6 +4,7 @@ const baseApiUrl = "http://localhost:3001/api";
 const blogEndpoint = "/blogs";
 const userEndpoint = "/users";
 const loginEndpoint = "/auth/login";
+const commentEndpoint = (id) => `${blogEndpoint}/${id}/comments`;
 
 const bearer = (token) => `Bearer ${token}`;
 
@@ -55,6 +56,19 @@ const deleteBlog = async ({ id }, token) => {
   });
 };
 
+const addComment = async ({ id }, text, token) => {
+  const response = await axios.post(
+    `${baseApiUrl}${commentEndpoint(id)}`,
+    { text },
+    {
+      headers: {
+        Authorization: bearer(token),
+      },
+    }
+  );
+  return response.data;
+};
+
 const blogService = {
   getAllBlogs,
   getAllUsers,
@@ -62,5 +76,6 @@ const blogService = {
   addBlog,
   likeBlog,
   deleteBlog,
+  addComment,
 };
 export default blogService;

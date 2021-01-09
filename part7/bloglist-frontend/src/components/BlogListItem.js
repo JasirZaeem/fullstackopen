@@ -2,35 +2,27 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
-const Blog = ({ blog }) => {
-  const blogStyle = {
-    padding: "10px",
-    border: "solid",
-    borderWidth: 2,
-    margin: "2px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  };
-
-  const pStyle = {
-    display: "inline-block",
-    margin: "0px",
+const BlogListItem = ({ blog }) => {
+  const hStyle = {
+    textDecoration: "none!important",
   };
 
   return (
-    <div style={blogStyle} className={"blog"}>
+    <div
+      className={"card mx-2 my-4 p-0 shadow-sm bg-light text-decoration-none"}
+    >
       <Link to={`blogs/${blog.id}`}>
-        <p style={pStyle}>
-          {blog.title} by {blog.author}
-        </p>
+        <div className="card-body ">
+          <h3 style={hStyle} className={"card-title text-dark"}>{blog.title}</h3>
+          by {blog.author}
+        </div>
       </Link>
     </div>
   );
 };
 
-Blog.propTypes = {
+BlogListItem.propTypes = {
   blog: PropTypes.object.isRequired,
 };
 
-export default Blog;
+export default BlogListItem;

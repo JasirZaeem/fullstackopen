@@ -60,7 +60,6 @@ blogsRouter.delete("/:id", authenticated, async (req, res, next) => {
 
 blogsRouter.put("/:id", authenticated, async (req, res, next) => {
   try {
-
     const { title, author, url, likes } = req.body;
 
     const fieldsToUpdate = Object.entries({ title, author, url, likes }).reduce(
@@ -82,7 +81,28 @@ blogsRouter.put("/:id", authenticated, async (req, res, next) => {
     if (updatedPost) {
       return res.status(201).json(updatedPost);
     } else {
-      return res.status(404).json({error: "Blog does not exist"});
+      return res.status(404).json({ error: "Blog does not exist" });
+    }
+  } catch (e) {
+    next(e);
+  }
+});
+
+blogsRouter.post("/:id/comments", authenticated, async (req, res, next) => {
+  try {
+    let { text } = req.body;
+    text = text.trim();
+    const comment = { text };
+
+    const updatedPost = await Blog.findByIdAndUpdate(
+      req.params.id,
+      { $push: { comments: comment } },
+      { new: true }
+    ).populate("user", { username: 1, name: 1 });
+    if (updatedPost) {
+      return res.status(201).json(updatedPost);
+    } else {
+      return res.status(404).json({ error: "Blog does not exist" });
     }
   } catch (e) {
     next(e);

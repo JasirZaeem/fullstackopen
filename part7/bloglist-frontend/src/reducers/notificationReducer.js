@@ -1,5 +1,5 @@
 export const NOTIFICATION_SUCCESS = "success";
-export const NOTIFICATION_ERROR = "error";
+export const NOTIFICATION_DANGER = "danger";
 export const NOTIFICATION_DURATION_MED = 5; // Seconds
 
 const SET_NOTIFICATION = "SET_NOTIFICATION";

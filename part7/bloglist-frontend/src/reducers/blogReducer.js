@@ -4,6 +4,7 @@ const ADD_BLOG = "ADD_BLOG";
 const LIKE_BLOG = "LIKE_BLOG";
 const DELETE_BLOG = "DELETE_BLOG";
 const INITIALIZE_BLOGS = "INITIALIZE_BLOGS";
+const COMMENT_ON_BLOG = "COMMENT_ON_BLOG";
 const initialState = [];
 
 const reducer = (state = initialState, action) => {
@@ -11,6 +12,10 @@ const reducer = (state = initialState, action) => {
     case INITIALIZE_BLOGS:
       return action.blogs;
     case LIKE_BLOG:
+      return state.map((blog) =>
+        blog.id === action.blog.id ? action.blog : blog
+      );
+    case COMMENT_ON_BLOG:
       return state.map((blog) =>
         blog.id === action.blog.id ? action.blog : blog
       );
@@ -65,4 +70,20 @@ export const deleteBlog = (blog) => {
     });
   };
 };
+
+export const commentOnBlog = (blog, text) => {
+  return async (dispatch, getState) => {
+    const updatedBlog = await blogService.addComment(
+      blog,
+      text,
+      getState().user.token
+    );
+    dispatch({
+      type: COMMENT_ON_BLOG,
+      blog: updatedBlog,
+    });
+    return updatedBlog;
+  };
+};
+
 export default reducer;

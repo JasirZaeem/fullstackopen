@@ -6,7 +6,7 @@ import CreateBlog from "./CreateBlog";
 import { addBlog, addInitialBlogs } from "../reducers/blogReducer";
 import {
   NOTIFICATION_DURATION_MED,
-  NOTIFICATION_ERROR,
+  NOTIFICATION_DANGER,
   NOTIFICATION_SUCCESS,
   setNewNotification,
 } from "../reducers/notificationReducer";
@@ -38,7 +38,7 @@ const Blogs = () => {
       dispatch(
         setNewNotification(
           `Failed to add new blog "${blogData.title}" by ${blogData.author}`,
-          NOTIFICATION_ERROR,
+          NOTIFICATION_DANGER,
           NOTIFICATION_DURATION_MED
         )
       );
@@ -47,19 +47,22 @@ const Blogs = () => {
 
   return (
     <div>
-      <div>
-        {createBlogVisible ? <CreateBlog addNewBlog={addNewBlog} /> : null}
+      <div className={"d-flex justify-content-between m-2"}>
+        <h1>BLOGS</h1>
         {user ? (
           <button
             id={"new-blog-form-control-btn"}
+            className={`btn btn-${createBlogVisible ? "danger" : "primary"}`}
             onClick={() => setCreateBlogVisible(!createBlogVisible)}
           >
             {createBlogVisible ? "cancel" : "new blog"}
           </button>
         ) : null}
       </div>
+      <div>
+        {createBlogVisible ? <CreateBlog addNewBlog={addNewBlog} /> : null}
+      </div>
 
-      <h1>Blogs</h1>
       <div className={"blog-list"}>
         {blogs
           .sort((a, b) => b.likes - a.likes)

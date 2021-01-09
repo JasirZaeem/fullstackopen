@@ -12,24 +12,35 @@ const Menu = () => {
     history.push("/");
   };
   return (
-    <nav>
-      <Link to={"/users"}>Users</Link>
-      <Link to={"/blogs"}>Blogs</Link>
-
-      {user ? (
-        <>
-          {user.name} ({user.username})
-          <button type={"button"} onClick={logoutHandler}>
-            LogOut
-          </button>
-        </>
-      ) : (
-        <>
-          <button type={"button"} onClick={() => history.push("/")}>
-            LogIn
-          </button>
-        </>
-      )}
+    <nav className={"navbar navbar-light bg-light"}>
+      <ul className={"nav"}>
+        <li>
+          <Link to={"/users"} className={"nav-link"}>
+            Users
+          </Link>
+        </li>
+        <li>
+          <Link to={"/blogs"} className={"nav-link"}>
+            Blogs
+          </Link>
+        </li>
+      </ul>
+      <div className={"user-section"}>
+        {user ? (
+          <>
+            {user.name} ({user.username})
+            <button type={"button"} className={"btn btn-danger m-2"} onClick={logoutHandler}>
+              LogOut
+            </button>
+          </>
+        ) : (
+          <>
+            <button type={"button"} className={"btn btn-success m-2"} onClick={() => history.push("/")}>
+              LogIn
+            </button>
+          </>
+        )}
+      </div>
     </nav>
   );
 };
