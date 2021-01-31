@@ -2,12 +2,42 @@ import { Main } from "./components/Main";
 import { Nav } from "./components/Nav";
 import { useState } from "react";
 import { LIBRARY_USER_TOKEN, PAGES } from "./constants";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient, useSubscription } from "@apollo/client";
+import { ALL_BOOKS, BOOK_ADDED } from "./queries";
 
 const App = () => {
   const [page, setPage] = useState(PAGES.authors);
   const [token, setToken] = useState(null);
   const client = useApolloClient();
+
+  const updateCacheWith = (addedBook) => {
+    const includedIn = (set, obj) => set.some((b) => b.id === obj.id);
+
+    const storedData = client.readQuery({ query: ALL_BOOKS });
+
+    if (!includedIn(storedData.allBooks, addedBook)) {
+      client.writeQuery({
+        query: ALL_BOOKS,
+        data: { allBooks: [...storedData.allBooks, addedBook] },
+      });
+      // Added
+      return true;
+    } else {
+      // Not added
+      return false;
+    }
+  };
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const {
+        data: { bookAdded },
+      } = subscriptionData;
+      if (updateCacheWith(bookAdded)) {
+        alert(`${bookAdded.title} by ${bookAdded.author.name} added`);
+      }
+    },
+  });
 
   const updateToken = (token) => {
     if (token === null) {
@@ -27,7 +57,11 @@ const App = () => {
   return (
     <div className="App">
       <Nav setPage={setPage} token={token} logout={logout} />
-      <Main page={page} updateToken={updateToken} />
+      <Main
+        page={page}
+        updateToken={updateToken}
+        updateCacheWith={updateCacheWith}
+      />
     </div>
   );
 };

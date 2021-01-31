@@ -12,6 +12,10 @@ const authorSchema = new mongoose.Schema({
     type: Number,
     default: null,
   },
+  bookCount: {
+    type: Number,
+    default: 1,
+  },
 });
 
 authorSchema.plugin(uniqueValidator);

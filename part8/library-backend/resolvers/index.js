@@ -1,9 +1,14 @@
 const Book = require("../models/book");
 const Author = require("../models/author");
+const User = require("../models/user");
+
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const { UserInputError } = require("apollo-server-errors");
-const { AuthenticationError } = require("apollo-server-errors");
+
+const { PubSub } = require("apollo-server");
+const pubsub = new PubSub();
+
+const { UserInputError, AuthenticationError } = require("apollo-server-errors");
 
 exports.resolvers = {
   Author: {
@@ -14,8 +19,6 @@ exports.resolvers = {
   },
 
   Query: {
-    bookCount: () => Book.collection.countDocuments(),
-
     authorCount: () => Author.collection.countDocuments(),
 
     allBooks: (root, args) => {
@@ -44,7 +47,11 @@ exports.resolvers = {
         throw new AuthenticationError("not authenticated");
       }
 
-      let author = await Author.findOne({ name: args.author });
+      let author = await Author.findOneAndUpdate(
+        { name: args.author },
+        { $inc: { bookCount: 1 } },
+        { new: true }
+      );
       try {
         if (!author) {
           author = new Author({ name: args.author });
@@ -71,7 +78,7 @@ exports.resolvers = {
       });
 
       try {
-        return book.save();
+        await book.save();
       } catch (e) {
         if (e?.errors?.title?.kind === "unique") {
           throw new UserInputError(
@@ -85,6 +92,10 @@ exports.resolvers = {
         }
         throw new UserInputError(e);
       }
+
+      pubsub.publish("BOOK_ADDED", { bookAdded: book });
+
+      return book;
     },
 
     editAuthor: async (root, args, { currentUser }) => {
@@ -124,6 +135,7 @@ exports.resolvers = {
         throw new UserInputError(e);
       }
     },
+
     login: async (root, args) => {
       const user = await User.findOne({ username: args.username });
 
@@ -137,6 +149,12 @@ exports.resolvers = {
       };
 
       return { value: jwt.sign(userForToken, JWT_SECRET) };
+    },
+  },
+
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(["BOOK_ADDED"]),
     },
   },
 };

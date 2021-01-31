@@ -26,6 +26,10 @@ exports.typeDefs = gql`
     value: String!
   }
 
+  type Subscription {
+    bookAdded: Book!
+  }
+
   type Query {
     bookCount: Int!
     authorCount: Int!
