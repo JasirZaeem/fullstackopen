@@ -1,5 +1,5 @@
 import { invalidOrMissingMessage, ValidationError } from "../errors";
-import { Gender, Patient, UnregisteredPatient } from "../../types";
+import { Gender, UnregisteredPatient } from "../../types";
 
 const isString = (text: unknown): text is string => {
   return typeof text === "string" || text instanceof String;
@@ -62,17 +62,17 @@ export const parseUnregisteredPatient = (patient: any): UnregisteredPatient => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
-export const parsePatient = (patient: any): Patient => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const { id } = patient ?? {};
-
-  if (!id || !isString(id)) {
-    throw new ValidationError(invalidOrMissingMessage("ID", id));
-  }
-
-  return {
-    id,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    ...parseUnregisteredPatient(patient),
-  };
-};
+// export const parsePatient = (patient: any): Patient => {
+//   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+//   const { id } = patient ?? {};
+//
+//   if (!id || !isString(id)) {
+//     throw new ValidationError(invalidOrMissingMessage("ID", id));
+//   }
+//
+//   return {
+//     id,
+//     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+//     ...parseUnregisteredPatient(patient),
+//   };
+// };

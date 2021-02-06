@@ -1,7 +1,8 @@
 import express from "express";
 import {
   addNewPatient,
-  getPatientsWithoutSSN,
+  getPatientById,
+  getPublicPatient,
 } from "../../../services/patients";
 import { parseUnregisteredPatient } from "../../../utils/validation";
 import { ValidationError } from "../../../utils/errors";
@@ -9,7 +10,21 @@ import { ValidationError } from "../../../utils/errors";
 const patientRouter = express.Router();
 
 patientRouter.get("/", (_req, res) => {
-  res.json(getPatientsWithoutSSN());
+  res.json(getPublicPatient());
+});
+
+patientRouter.get("/:id", (req, res) => {
+  const { id } = req.params;
+
+  const patient = getPatientById(id);
+
+  if (patient) {
+    return res.json(patient);
+  }
+
+  return res.status(404).json({
+    error: "Patient not found",
+  });
 });
 
 patientRouter.post("/", (req, res) => {
