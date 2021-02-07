@@ -1,5 +1,15 @@
 import { invalidOrMissingMessage, ValidationError } from "../errors";
-import { Gender, UnregisteredPatient } from "../../types";
+import {
+  BaseEntry,
+  Entry,
+  EntryTypes,
+  Gender,
+  HealthCheckEntry,
+  HealthCheckRating,
+  HospitalEntry,
+  OccupationalHealthcareEntry,
+  UnregisteredPatient,
+} from "../../types";
 
 const isString = (text: unknown): text is string => {
   return typeof text === "string" || text instanceof String;
@@ -38,6 +48,8 @@ export const parseUnregisteredPatient = (patient: any): UnregisteredPatient => {
     throw new ValidationError(invalidOrMissingMessage("Name", name));
   }
 
+  // Parsed date later
+
   if (!ssn || !isString(ssn)) {
     throw new ValidationError(invalidOrMissingMessage("SSN", ssn));
   }
@@ -62,17 +74,181 @@ export const parseUnregisteredPatient = (patient: any): UnregisteredPatient => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
-// export const parsePatient = (patient: any): Patient => {
-//   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-//   const { id } = patient ?? {};
-//
-//   if (!id || !isString(id)) {
-//     throw new ValidationError(invalidOrMissingMessage("ID", id));
-//   }
-//
-//   return {
-//     id,
-//     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-//     ...parseUnregisteredPatient(patient),
-//   };
-// };
+export const parseBaseEntry = (entry: any): BaseEntry => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { id, description, date, specialist, diagnosisCodes } = entry;
+
+  if (!id || !isString(id)) {
+    throw new ValidationError(invalidOrMissingMessage("ID", id));
+  }
+  if (!description || !isString(description)) {
+    throw new ValidationError(
+      invalidOrMissingMessage("Description", description)
+    );
+  }
+
+  // Parsed date later
+
+  if (!specialist || !isString(specialist)) {
+    throw new ValidationError(
+      invalidOrMissingMessage("Specialist", specialist)
+    );
+  }
+
+  if (diagnosisCodes) {
+    if (
+      !Array.isArray(diagnosisCodes) ||
+      diagnosisCodes.some((code) => !code || !isString(code))
+    ) {
+      throw new ValidationError(
+        invalidOrMissingMessage("Specialist", specialist)
+      );
+    }
+
+    return {
+      id,
+      date: parseDateString(date),
+      description,
+      specialist,
+      diagnosisCodes,
+    };
+  }
+
+  return {
+    id,
+    date: parseDateString(date),
+    description,
+    specialist,
+  };
+};
+
+const isHealthCheckRating = (rating: any): rating is HealthCheckRating => {
+  return Object.values(HealthCheckRating).includes(rating);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+export const parseHealthCheckEntry = (entry: any): HealthCheckEntry => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { type, healthCheckRating, ...rest } = entry;
+
+  const baseEntry = parseBaseEntry(rest);
+
+  if (!type || !isString(type) || type !== EntryTypes.HealthCheck) {
+    throw new ValidationError(invalidOrMissingMessage("Type", type));
+  }
+
+  if (!healthCheckRating || !isHealthCheckRating(healthCheckRating)) {
+    throw new ValidationError(
+      invalidOrMissingMessage("HealthCheckRating", healthCheckRating)
+    );
+  }
+
+  return {
+    ...baseEntry,
+    type,
+    healthCheckRating,
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+export const parseHospitalEntry = (entry: any): HospitalEntry => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const {
+    type,
+    discharge: { date, criteria },
+    ...rest
+  } = entry;
+
+  const baseEntry = parseBaseEntry(rest);
+
+  if (!type || !isString(type) || type !== EntryTypes.Hospital) {
+    throw new ValidationError(invalidOrMissingMessage("Type", type));
+  }
+
+  // Parsed date later
+
+  if (!criteria || !isString(criteria)) {
+    throw new ValidationError(
+      invalidOrMissingMessage("Discharge: Criteria", criteria)
+    );
+  }
+
+  return {
+    ...baseEntry,
+    type,
+    discharge: {
+      date: parseDateString(date),
+      criteria,
+    },
+  };
+};
+
+export const parseOccupationalHealthcareEntry = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+  entry: any
+): OccupationalHealthcareEntry => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { type, employerName, sickLeave, ...rest } = entry;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { startDate, endDate } = sickLeave;
+
+  const baseEntry = parseBaseEntry(rest);
+
+  if (!type || !isString(type) || type !== EntryTypes.OccupationalHealthcare) {
+    throw new ValidationError(invalidOrMissingMessage("Type", type));
+  }
+
+  // Parsed date later
+
+  if (!employerName || !isString(employerName)) {
+    throw new ValidationError(
+      invalidOrMissingMessage("EmployerName", employerName)
+    );
+  }
+
+  if (sickLeave) {
+    return {
+      ...baseEntry,
+      type,
+      employerName,
+      sickLeave: {
+        startDate: parseDateString(startDate),
+        endDate: parseDateString(endDate),
+      },
+    };
+  }
+
+  return {
+    ...baseEntry,
+    type,
+    employerName,
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isEntryType = (entryType: any): entryType is EntryTypes => {
+  return Object.values(EntryTypes).includes(entryType);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
+export const parseEntry = (entry: any): Entry => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { type } = entry;
+
+  if (!type || !isEntryType(type)) {
+    throw new ValidationError(invalidOrMissingMessage("Type", type));
+  }
+
+  switch (type) {
+    case EntryTypes.HealthCheck: {
+      return parseHealthCheckEntry(entry);
+    }
+    case EntryTypes.Hospital: {
+      return parseHospitalEntry(entry);
+    }
+    case EntryTypes.OccupationalHealthcare: {
+      return parseOccupationalHealthcareEntry(entry);
+    }
+  }
+};

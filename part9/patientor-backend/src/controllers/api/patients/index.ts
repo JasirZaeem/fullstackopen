@@ -1,6 +1,7 @@
 import express from "express";
 import {
   addNewPatient,
+  addRawEntryToPatient,
   getPatientById,
   getPublicPatient,
 } from "../../../services/patients";
@@ -41,6 +42,31 @@ patientRouter.post("/", (req, res) => {
       error: (e as Error).message ?? "Server error",
     });
   }
+});
+
+patientRouter.post("/:id/entries", (req, res) => {
+  const { id } = req.params;
+  let entry;
+
+  try {
+    entry = addRawEntryToPatient(id, req.body);
+  } catch (e) {
+    if (e instanceof ValidationError) {
+      return res.status(400).json({
+        error: e.message,
+      });
+    }
+
+    return res.status(500).json({
+      error: (e as Error).message ?? "Server error",
+    });
+  }
+
+  if (entry) {
+    return res.json(entry);
+  }
+
+  return res.status(404).send();
 });
 
 export default patientRouter;
